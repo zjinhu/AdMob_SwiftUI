@@ -20,8 +20,12 @@ extension View {
 
 public struct AdRewardModifier: ViewModifier {
     @State private var hasAppeared = false
+    @State private var showToast = false
+    @State var timer = Timer.publish(every: 3, on: .main, in: .common).autoconnect()
+
     private let adInstanse: RewardInstance?
     private let action: (Int) -> ()
+    
     public init(adUnitID: String, action: @escaping (Int) -> ()) {
         self.action = action
         adInstanse = RewardInstance(adUnitID: adUnitID, action: action)
@@ -29,7 +33,6 @@ public struct AdRewardModifier: ViewModifier {
 
     public func body(content: Content) -> some View {
         content
-            .disabled(!(adInstanse?.rewardLoaded ?? false))
             .onAppear {
                 if !hasAppeared {
                     hasAppeared = true
@@ -37,7 +40,32 @@ public struct AdRewardModifier: ViewModifier {
                 }
             }
             .onTapGesture {
+                if adInstanse?.rewardLoaded != true{
+                    showToast = true
+                    timer = Timer.publish(every: 3, on: .main, in: .common).autoconnect()
+                }
                 adInstanse?.showAD()
+                
+            }
+            .onReceive(timer) { firedDate in
+                showToast = false
+                timer.upstream.connect().cancel()
+            }
+            .overlay {
+                if adInstanse?.rewardLoaded != true{
+                    HStack(spacing: 10){
+                        ProgressView()
+                            .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                        Text("loading...")
+                            .foregroundColor(.white)
+                    }
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 5)
+                    .background(
+                        Capsule().fill(Color.black.opacity(0.7))
+                    )
+                    .opacity(showToast ? 1 : 0)
+                }
             }
     }
 }
@@ -99,10 +127,10 @@ public class RewardInstance: NSObject, GADFullScreenContentDelegate, ObservableO
             return logger.log("Rewarded UIViewController is nil")
         }
         
-        rewardedAd.present(fromRootViewController: vc) { [weak self] in
+        rewardedAd.present(fromRootViewController: vc) {
             let reward = rewardedAd.adReward
             logger.log("Reward amount: \(reward.amount)")
-            self?.action(reward.amount.intValue)
+            self.action(reward.amount.intValue)
         }
     }
     

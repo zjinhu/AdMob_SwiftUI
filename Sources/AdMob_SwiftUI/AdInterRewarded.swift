@@ -64,10 +64,10 @@ public class InterRewardedInstance: NSObject, GADFullScreenContentDelegate {
             return logger.log("InterRewarded UIViewController is nil")
         }
  
-        rewardedInterstitialAd.present(fromRootViewController: vc) { [weak self] in
+        rewardedInterstitialAd.present(fromRootViewController: vc) {
             let reward = rewardedInterstitialAd.adReward
             logger.log("Reward amount: \(reward.amount)")
-            self?.action(reward.amount.intValue)
+            self.action(reward.amount.intValue)
         }
  
     }
