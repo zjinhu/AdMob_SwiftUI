@@ -99,8 +99,9 @@ public class RewardInstance: NSObject, GADFullScreenContentDelegate, ObservableO
         return try await withCheckedThrowingContinuation { continuation in
             GADRewardedAd.load(withAdUnitID: adUnitID, request: GADRequest()) { ad, error in
                 if let error = error {
-                    continuation.resume(throwing: error)
+                    logger.log("Failed to load RewardedAd: \(error)")
                     self.rewardLoaded = false
+                    continuation.resume(throwing: error)
                 } else if let ad = ad {
                     self.rewardLoaded = true
                     self.rewardedAd = ad

@@ -81,6 +81,7 @@ public class InterInstance: NSObject, GADFullScreenContentDelegate {
         return try await withCheckedThrowingContinuation { continuation in
             GADInterstitialAd.load(withAdUnitID: adUnitID, request: GADRequest()) { ad, error in
                 if let error = error {
+                    logger.log("Failed to load InterstitialAd: \(error)")
                     continuation.resume(throwing: error)
                 } else if let ad = ad {
                     self.interstitial = ad

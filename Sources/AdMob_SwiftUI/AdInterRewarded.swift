@@ -90,6 +90,7 @@ public class InterRewardedInstance: NSObject, GADFullScreenContentDelegate {
         return try await withCheckedThrowingContinuation { continuation in
             GADRewardedInterstitialAd.load(withAdUnitID: adUnitID, request: GADRequest()) { ad, error in
                 if let error = error {
+                    logger.log("Failed to load RewardedInterstitialAd: \(error)")
                     continuation.resume(throwing: error)
                 } else if let ad = ad {
                     self.rewardedInterstitialAd = ad

@@ -84,6 +84,7 @@ public class SplashInstance: NSObject, GADFullScreenContentDelegate {
         return try await withCheckedThrowingContinuation { continuation in
             GADAppOpenAd.load(withAdUnitID: adUnitID, request: GADRequest()) { ad, error in
                 if let error = error {
+                    logger.log("Failed to load AppOpenAd: \(error)")
                     continuation.resume(throwing: error)
                 } else if let ad = ad {
                     self.appOpenAd = ad
