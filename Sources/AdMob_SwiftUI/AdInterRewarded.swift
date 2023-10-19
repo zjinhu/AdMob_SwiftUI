@@ -20,7 +20,7 @@ extension View {
 }
 
 public struct AdInterRewardedModifier: ViewModifier {
-
+    @State private var hasAppeared = false
     private let adInstanse : InterRewardedInstance?
     private let action: (Int) -> ()
     public init(adUnitID: String, action: @escaping (Int) -> ()) {
@@ -31,9 +31,15 @@ public struct AdInterRewardedModifier: ViewModifier {
 
     public func body(content: Content) -> some View {
         content
-            .onFirstAppear {
-                adInstanse?.loadAD()
+            .task {
+                if !hasAppeared {
+                    hasAppeared = true
+                    if let _ = try? await adInstanse?.loadAD(){
+                        adInstanse?.showAD()
+                    }
+                }
             }
+ 
     }
 }
 
@@ -50,6 +56,7 @@ public class InterRewardedInstance: NSObject, GADFullScreenContentDelegate {
     
     public func showAD() {
         guard let rewardedInterstitialAd = rewardedInterstitialAd else {
+            loadAD()
             return logger.log("InterRewarded wasn't ready")
         }
         
@@ -74,11 +81,9 @@ public class InterRewardedInstance: NSObject, GADFullScreenContentDelegate {
             }
             self.rewardedInterstitialAd = ad
             self.rewardedInterstitialAd?.fullScreenContentDelegate = self
-            self.showAD()
         }
     }
-    
-    @discardableResult
+     
     public func loadAD() async throws -> GADRewardedInterstitialAd {
         clean()
         

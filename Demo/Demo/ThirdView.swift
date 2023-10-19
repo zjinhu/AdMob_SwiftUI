@@ -16,7 +16,7 @@ struct ThirdView: View {
                     Text(row)
                 }.navigationBarTitle(Text("Loader Test"), displayMode: .large)
             }
-            .adInterRewarded(adUnitID: "ca-app-pub-3278026778756846/5015225828") { num in
+            .adInterRewarded(adUnitID: "ca-app-pub-3940256099942544/6978759866") { num in
                 print("Reward + :\(num)")
             }
 //        }

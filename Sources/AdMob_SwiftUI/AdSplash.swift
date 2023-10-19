@@ -19,7 +19,7 @@ extension View {
 }
 
 public struct AdSplashModifier: ViewModifier {
- 
+    @State private var hasAppeared = false
     private var adInstanse: SplashInstance?
     private let action: () -> ()
     public init(adUnitID: String, action: @escaping () -> ()) {
@@ -29,8 +29,13 @@ public struct AdSplashModifier: ViewModifier {
 
     public func body(content: Content) -> some View {
         content
-            .onFirstAppear {
-                adInstanse?.loadAD()
+            .task {
+                if !hasAppeared {
+                    hasAppeared = true
+                    if let _ = try? await adInstanse?.loadAD(){
+                        adInstanse?.showAD()
+                    }
+                }
             }
     }
 }
@@ -47,6 +52,7 @@ public class SplashInstance: NSObject, GADFullScreenContentDelegate {
     
     public func showAD() {
         guard let appOpenAd = appOpenAd else {
+            loadAD()
             return logger.log("Splash wasn't ready")
         }
         
@@ -70,11 +76,9 @@ public class SplashInstance: NSObject, GADFullScreenContentDelegate {
             }
             self.appOpenAd = ad
             self.appOpenAd?.fullScreenContentDelegate = self
-            self.showAD()
         }
     }
-    
-    @discardableResult
+     
     public func loadAD() async throws -> GADAppOpenAd {
         clean()
         return try await withCheckedThrowingContinuation { continuation in

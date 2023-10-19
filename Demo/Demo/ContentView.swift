@@ -12,7 +12,7 @@ struct ContentView: View {
         NavigationView {
             VStack(spacing: 50) {
                 Text("点击打开激励广告")
-                    .adReward(adUnitID: "ca-app-pub-3278026778756846/3907239855") { num in
+                    .adReward(adUnitID: "ca-app-pub-3940256099942544/1712485313") { num in
                         print("Reward + :\(num)")
                     }
                 

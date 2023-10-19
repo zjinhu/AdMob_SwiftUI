@@ -20,7 +20,7 @@ extension View {
 }
 
 public struct AdInterModifier: ViewModifier {
-
+    @State private var hasAppeared = false
     private let adInstanse : InterInstance?
 
     public init(adUnitID: String) {
@@ -29,8 +29,13 @@ public struct AdInterModifier: ViewModifier {
 
     public func body(content: Content) -> some View {
         content
-            .onFirstAppear {
-                adInstanse?.loadAD()
+            .task {
+                if !hasAppeared {
+                    hasAppeared = true
+                    if let _ = try? await adInstanse?.loadAD(){
+                        adInstanse?.showAD()
+                    }
+                }
             }
     }
 }
@@ -46,6 +51,7 @@ public class InterInstance: NSObject, GADFullScreenContentDelegate {
     
     public func showAD() {
         guard let interstitial = interstitial else {
+            loadAD()
             return logger.log("InterAd wasn't ready")
         }
         
@@ -65,12 +71,10 @@ public class InterInstance: NSObject, GADFullScreenContentDelegate {
                 return
             }
             self.interstitial = ad
-            self.interstitial?.fullScreenContentDelegate = self
-            self.showAD()
+            self.interstitial?.fullScreenContentDelegate = self 
         }
     }
-    
-    @discardableResult
+     
     public func loadAD() async throws -> GADInterstitialAd {
         clean()
         

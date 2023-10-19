@@ -19,7 +19,7 @@ extension View {
 }
 
 public struct AdRewardModifier: ViewModifier {
- 
+    @State private var hasAppeared = false
     private let adInstanse: RewardInstance?
     private let action: (Int) -> ()
     public init(adUnitID: String, action: @escaping (Int) -> ()) {
@@ -29,8 +29,12 @@ public struct AdRewardModifier: ViewModifier {
 
     public func body(content: Content) -> some View {
         content
-            .onFirstAppear {
-                adInstanse?.loadAD()
+            .disabled(!(adInstanse?.rewardLoaded ?? false))
+            .onAppear {
+                if !hasAppeared {
+                    hasAppeared = true
+                    adInstanse?.loadAD()
+                }
             }
             .onTapGesture {
                 adInstanse?.showAD()
@@ -38,8 +42,8 @@ public struct AdRewardModifier: ViewModifier {
     }
 }
 
-public class RewardInstance: NSObject, GADFullScreenContentDelegate {
- 
+public class RewardInstance: NSObject, GADFullScreenContentDelegate, ObservableObject{
+    @Published var rewardLoaded: Bool = false
     private var rewardedAd: GADRewardedAd?
     private let adUnitID: String
     private let action: (Int) -> ()
@@ -49,25 +53,28 @@ public class RewardInstance: NSObject, GADFullScreenContentDelegate {
     }
 
     public func loadAD() {
-        clean()
+
         GADRewardedAd.load(withAdUnitID: adUnitID, request: GADRequest()) { ad, error in
             if let error {
                 logger.log("Failed to load RewardedAd: \(error)")
+                self.rewardLoaded = false
                 return
             }
+            self.rewardLoaded = true
             self.rewardedAd = ad
             self.rewardedAd?.fullScreenContentDelegate = self
         }
     }
-    
-    @discardableResult
+ 
     public func loadAD() async throws -> GADRewardedAd {
-        clean()
+ 
         return try await withCheckedThrowingContinuation { continuation in
             GADRewardedAd.load(withAdUnitID: adUnitID, request: GADRequest()) { ad, error in
                 if let error = error {
                     continuation.resume(throwing: error)
+                    self.rewardLoaded = false
                 } else if let ad = ad {
+                    self.rewardLoaded = true
                     self.rewardedAd = ad
                     ad.fullScreenContentDelegate = self
                     continuation.resume(returning: ad)
@@ -83,6 +90,8 @@ public class RewardInstance: NSObject, GADFullScreenContentDelegate {
     
     public func showAD() {
         guard let rewardedAd = rewardedAd else {
+            rewardLoaded = false
+            loadAD()
             return logger.log("Rewarded wasn't ready")
         }
         
@@ -99,6 +108,7 @@ public class RewardInstance: NSObject, GADFullScreenContentDelegate {
     
     public func adDidDismissFullScreenContent(_ ad: GADFullScreenPresentingAd) {
         clean()
+        loadAD()
         logger.log("Rewarded Dismiss")
     }
     

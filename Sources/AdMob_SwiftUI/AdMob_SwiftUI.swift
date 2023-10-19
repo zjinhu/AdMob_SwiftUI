@@ -70,30 +70,9 @@ extension AdManager{
     public static func initAD() {
         if !UserDefaults.standard.bool(forKey: "isPro.InPurchase"){
             GADMobileAds.sharedInstance().start { status in
-                print("xxxxxx\(status)")
+                logger.log("GADMobileAds status:\(status)")
             }
         }
-    }
-}
-
-struct OnFirstAppear: ViewModifier {
-    let action: (() -> Void)?
-    
-    @State private var hasAppeared = false
-    
-    func body(content: Content) -> some View {
-        content.onAppear {
-            if !hasAppeared {
-                hasAppeared = true
-                action?()
-            }
-        }
-    }
-}
-
-extension View {
-    func onFirstAppear(perform action: (() -> Void)? = nil) -> some View {
-        modifier(OnFirstAppear(action: action))
     }
 }
 
