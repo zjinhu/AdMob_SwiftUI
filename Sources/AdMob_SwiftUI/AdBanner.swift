@@ -64,7 +64,7 @@ public struct AdBannerView: UIViewControllerRepresentable {
 #Preview {
     GeometryReader { geometry in
         AdBannerView()
-            .frame(width: geometry.size.width, height: 50)
+                .frame(width: geometry.size.width, height: 75)
             .background(Color.red)
     }
 }

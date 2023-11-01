@@ -31,7 +31,7 @@ struct ContentView: View {
                 AdBannerView()
                     .adUnitID("ca-app-pub-3278026778756846/2716365544")
                     .frame(maxWidth: .infinity)
-                    .frame(height: 50)
+                    .frame(height: 75)
             }
         }
         .padding()
