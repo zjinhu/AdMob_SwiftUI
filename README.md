@@ -52,4 +52,4 @@ AdManager.initAD()
                 .adSplash(adUnitID: "ca-app-pub-3278026778756846/4631954192") {
                     print("启动广告关闭,打开内购页面")
                 }
-'''
+```
